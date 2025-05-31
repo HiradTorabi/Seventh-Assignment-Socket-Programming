@@ -1,21 +1,29 @@
 package Shared;
 
-import java.net.Socket;
+import java.io.Serializable;
 
-public class User {
-    private final String username;
-    private final Socket socket;
+public class User implements Serializable {
+    private String username;
+    private String password;
 
-    public User(String username, Socket socket) {
+    public User(String username, String password) {
         this.username = username;
-        this.socket = socket;
+        this.password = password;
     }
 
     public String getUsername() {
         return username;
     }
 
-    public Socket getSocket() {
-        return socket;
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 }

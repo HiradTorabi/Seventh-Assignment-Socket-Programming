@@ -1,30 +1,51 @@
 package Server;
-
-import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
-
+import java.util.ArrayList;
+import Shared.User;
 public class Server {
-    private static final Set<ClientHandler> clients = Collections.synchronizedSet(new HashSet<>());
+    // Predefined users for authentication
+    private static final User[] users = {
+            new User("babak", "1234"),
+            new User("mmdhossain", "1234"),
+            new User("bamdad", "1234"),
+            new User("reza", "1234"),
+            new User("mmd", "1234"),
+    };
 
-    public static void main(String[] args) {
-        try (ServerSocket serverSocket = new ServerSocket(5050)) {
-            System.out.println("✅ Server is running on port 5050...");
+    // List of currently connected clients
+    public static ArrayList<ClientHandler> clients = new ArrayList<>();
 
-            while (true) {
+    public static void main(String[] args) throws Exception
+    {
+        try
+        {
+            ServerSocket serverSocket = new ServerSocket(5003);
+            System.out.println("Server started");
+            while (true)
+            {
                 Socket socket = serverSocket.accept();
-
-                // Create new handler thread
-                ClientHandler handler = new ClientHandler(socket, clients);
-                clients.add(handler);
-                handler.start();  // Because ClientHandler extends Thread
+                System.out.println("new client connected");
+                ClientHandler clientHandler = new ClientHandler(socket);
+                clients.add(clientHandler);
+                new Thread(clientHandler).start();
             }
-
-        } catch (IOException e) {
-            e.printStackTrace();
         }
+        catch (Exception e)
+        {
+            System.out.println(e.getMessage());
+        }
+    }
+
+    public static boolean authenticate(String username, String password)
+    {
+        for (User user : users)
+        {
+            if (user.getUsername().equals(username) && user.getPassword().equals(password))
+            {
+                return true;
+            }
+        }
+        return false;
     }
 }

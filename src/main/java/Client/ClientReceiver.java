@@ -1,30 +1,33 @@
 package Client;
 
-import Shared.Message;
 
-import java.io.ObjectInputStream;
-import java.net.Socket;
+import java.io.DataInputStream;
+import java.io.IOException;
 
-public class ClientReceiver extends Thread
+public class ClientReceiver implements Runnable
 {
-    private final ObjectInputStream in;
-    public ClientReceiver(Socket socket) throws Exception
+    private DataInputStream dis;
+    public ClientReceiver(DataInputStream dis)
     {
-        this.in = new ObjectInputStream(socket.getInputStream());
+        this.dis = dis;
     }
+
+    @Override
     public void run()
     {
         try
         {
-            Message msg;
-            while ((msg = (Message) in.readObject()) != null)
+            while (true)
             {
-                System.out.println(msg.getFrom() + ": " + msg.getContent());
+                // Listen for new messages from server
+                String message = dis.readUTF();
+                System.out.println(message);
             }
         }
-        catch (Exception e)
+        catch (IOException e)
         {
-            System.out.println("Disconnected from server.");
+            System.out.println("Disconnected from chat or server closed.");
         }
     }
+
 }
