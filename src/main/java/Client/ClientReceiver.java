@@ -1,23 +1,30 @@
 package Client;
 
+import Shared.Message;
 
-public class ClientReceiver implements Runnable {
-    // TODO: Declare a variable to hold the input stream from the socket
-    public ClientReceiver() {
-        // TODO: Modify this constructor to receive either a Socket or an InputStream as a parameter
-        // TODO: Initialize the input stream variable using the received parameter
+import java.io.ObjectInputStream;
+import java.net.Socket;
+
+public class ClientReceiver extends Thread
+{
+    private final ObjectInputStream in;
+    public ClientReceiver(Socket socket) throws Exception
+    {
+        this.in = new ObjectInputStream(socket.getInputStream());
     }
-
-    @Override
-    public void run() {
-        try {
-            while (true) {
-                //TODO: Listen for new messages from server
-                //TODO: print the  new message in CLI
+    public void run()
+    {
+        try
+        {
+            Message msg;
+            while ((msg = (Message) in.readObject()) != null)
+            {
+                System.out.println(msg.getFrom() + ": " + msg.getContent());
             }
-        } catch (Exception e) {
-
+        }
+        catch (Exception e)
+        {
+            System.out.println("Disconnected from server.");
         }
     }
-
 }

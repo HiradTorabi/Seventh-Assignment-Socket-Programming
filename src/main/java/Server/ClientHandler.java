@@ -1,62 +1,67 @@
+
 package Server;
 
-import java.io.IOException;
-import java.net.Socket;
-import java.util.List;
+import Shared.Message;
 
-public class ClientHandler implements Runnable {
-    private Socket socket;
-    // TODO: Declare a variable to hold the input stream from the socket
-    // TODO: Declare a variable to hold the output stream from the socket
-    private List<ClientHandler> allClients;
+import java.io.*;
+import java.net.Socket;
+import java.util.Set;
+
+public class ClientHandler extends Thread {
+    private final Socket socket;
+    private final ObjectOutputStream objectOut;
+    private final ObjectInputStream objectIn;
+    private final Set<ClientHandler> allClients;
     private String username;
 
-    public ClientHandler() {
-        // TODO: Modify the constructor as needed
+    public ClientHandler(Socket socket, Set<ClientHandler> allClients) throws IOException {
+        this.socket = socket;
+        this.allClients = allClients;
+        this.objectOut = new ObjectOutputStream(socket.getOutputStream());
+        this.objectIn = new ObjectInputStream(socket.getInputStream());
     }
 
     @Override
     public void run() {
         try {
             while (true) {
-                // TODO: Read incoming message from the input stream
-                // TODO: Process the message
+                Message msg = (Message) objectIn.readObject();
+
+                // Handle login
+                if (msg.getType().equals("LOGIN")) {
+                    username = msg.getFrom();
+                    System.out.println(username + " connected.");
+                    broadcast(new Message("Server", "CHAT", username + " has joined."));
+                }
+
+                // Handle chat
+                else if (msg.getType().equals("CHAT")) {
+                    broadcast(msg);
+                }
+
+                // Handle exit
+                else if (msg.getType().equals("EXIT")) {
+                    break;
+                }
             }
         } catch (Exception e) {
-
+            System.out.println("❌ " + username + " disconnected.");
         } finally {
-            //TODO: Update the clients list in Server
+            try {
+                socket.close();
+                allClients.remove(this);
+                broadcast(new Message("Server", "CHAT", username + " has left."));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
-
-    private void sendMessage(String msg){
-        //TODO: send the message (chat) to the client
+    private void broadcast(Message message) {
+        for (ClientHandler client : allClients) {
+            try {
+                client.objectOut.writeObject(message);
+            } catch (IOException ignored) {}
+        }
     }
-    private void broadcast(String msg) throws IOException {
-        //TODO: send the message to every other user currently in the chat room
-    }
-
-    private void sendFileList(){
-        // TODO: List all files in the server directory
-        // TODO: Send a message containing file names as a comma-separated string
-    }
-    private void sendFile(String fileName){
-        // TODO: Send file name and size to client
-        // TODO: Send file content as raw bytes
-    }
-    private void receiveFile(String filename, int fileLength)
-    {
-        // TODO: Receive uploaded file content and store it in a byte array
-        // TODO: after the upload is done, save it using saveUploadedFile
-    }
-    private void saveUploadedFile(String filename, byte[] data) throws IOException {
-        // TODO: Save the byte array to a file in the Server's resources folder
-    }
-
-    private void handleLogin(String username, String password) throws IOException, ClassNotFoundException {
-        // TODO: Call Server.authenticate(username, password) to check credentials
-        // TODO: Send success or failure response to the client
-    }
-
 }

@@ -1,15 +1,21 @@
 package Shared;
 
-public class User {
-    private String username;
-    private String password;
+import java.net.Socket;
 
-    public User(String username, String password) {
+public class User {
+    private final String username;
+    private final Socket socket;
+
+    public User(String username, Socket socket) {
         this.username = username;
-        this.password = password;
+        this.socket = socket;
     }
 
-    public String getUsername() { return username; }
+    public String getUsername() {
+        return username;
+    }
 
-    public String getPassword() { return password; }
+    public Socket getSocket() {
+        return socket;
+    }
 }
